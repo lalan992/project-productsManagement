@@ -12,7 +12,7 @@ router.get("/user/:userId/profile");
 router.put("/user/:userId/profile");
 
 //product Apis
-
+router.post("/products", productController.createProduct);
 //cart Apis
 
 //order Apis

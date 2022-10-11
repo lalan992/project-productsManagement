@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const isValidName = function (value) {
   if (
     typeof value === "string" &&
-    value.trim().length > 0 &&    
+    value.trim().length > 0 &&
     /^[A-Z][a-z]*(\s[A-Z][a-z]*)*$/.test(value)
   )
     return true;
@@ -52,7 +52,7 @@ const isValidObjectId = function (objectId) {
 const isStringsArray = function (arr) {
   if (!Array.isArray(arr)) return false;
   for (let i = 0; i < arr.length; i++) {
-    if (typeof arr[i] !== "string" || arr[i].trim().length === 0) return false;
+    if (!["S", "XS", "M", "X", "L", "XXL", "XL"].includes(arr[i])) return false;
   }
   return true;
 };
