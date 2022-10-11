@@ -92,7 +92,7 @@ const createProduct = async function (req, res) {
         message: "currencyFormat and currencyId are not matching.",
       });
     }
-    // console.log(typeof availableSizes);
+    console.log(JSON.parse(availableSizes));
     if (availableSizes && !validator.isStringsArray(availableSizes)) {
       return res.status(400).send({
         status: false,
@@ -107,7 +107,7 @@ const createProduct = async function (req, res) {
         message: "Style must be string .",
       });
     }
-    const createdProduct = await productModel.create(data);
+    // const createdProduct = await productModel.create(data);
     return res.status(201).send({
       status: true,
       message: "Product created Successfully.",

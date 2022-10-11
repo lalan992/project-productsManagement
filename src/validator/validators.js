@@ -56,6 +56,14 @@ const isStringsArray = function (arr) {
   }
   return true;
 };
+const isValidAddress = function (obj) {
+  const { street, city, pincode } = obj;
+  if (!isValid(street)) return false;
+  if (!isValid(city)) return false;
+  if (typeof pincode !== "number" || pincode.toString().length !== 6)
+    return false;
+  return true;
+};
 
 module.exports = {
   isValid,
@@ -68,6 +76,7 @@ module.exports = {
   isValidName,
   isValidMobile,
   isValidDate,
+  isValidAddress,
 };
 
-// console.log(isValidDate("1555-12-32"));
+// console.log(typeof 122);
