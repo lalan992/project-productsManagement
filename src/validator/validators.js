@@ -40,6 +40,10 @@ const isValidMobile = function (value) {
   if (typeof value === "string" && /^[0-9]\d{9}$/gi.test(value)) return true;
   return false;
 };
+const isValidPincode = function (value) {
+  if (typeof value === "string" && /^[0-9]\d{5}$/gi.test(value)) return true;
+  return false;
+};
 
 const isValidRequestBody = function (requestBody) {
   return Object.keys(requestBody).length > 0;
@@ -50,7 +54,7 @@ const isValidObjectId = function (objectId) {
 };
 
 const isStringsArray = function (arr) {
-  if (!Array.isArray(arr)) return false;
+  // console.log("lalan1");
   for (let i = 0; i < arr.length; i++) {
     if (!["S", "XS", "M", "X", "L", "XXL", "XL"].includes(arr[i])) return false;
   }
@@ -60,8 +64,7 @@ const isValidAddress = function (obj) {
   const { street, city, pincode } = obj;
   if (!isValid(street)) return false;
   if (!isValid(city)) return false;
-  if (typeof pincode !== "number" || pincode.toString().length !== 6)
-    return false;
+  if (!isValidPincode(pincode)) return false;
   return true;
 };
 
@@ -77,6 +80,7 @@ module.exports = {
   isValidMobile,
   isValidDate,
   isValidAddress,
+  isValidPincode,
 };
 
 // console.log(typeof 122);
