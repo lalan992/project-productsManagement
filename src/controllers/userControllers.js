@@ -4,7 +4,7 @@ const validator = require("../validator/validators");
 const userModel = require("../Models/userModel");
 const { uploadFile } = require("../validator/linkGenerator");
 
-exports.createUser = async function (req, res) {
+const createUser = async function (req, res) {
   try {
     if (!validator.isValidRequestBody(req.body)) {
       return res.status(400).send({
@@ -30,8 +30,15 @@ exports.createUser = async function (req, res) {
     }
 
     let { fname, lname, email, password, phone, address } = data;
-    address = JSON.parse(address);
-    console.log(address);
+    try {
+      address = JSON.parse(address);
+    } catch (err) {
+      return res.status(400).send({
+        status: false,
+        message: "provide address in correct object format.",
+      });
+    }
+    // console.log(address);
 
     // Validation of fname
     if (!validator.isValidName(fname)) {
@@ -63,15 +70,27 @@ exports.createUser = async function (req, res) {
     }
     shippingAddress = address.shipping;
     billingAddress = address.billing;
-    if (!validator.isValidAddress(shippingAddress)) {
+    if (shippingAddress) {
+      if (!validator.isValidAddress(shippingAddress)) {
+        return res
+          .status(400)
+          .send({ status: false, message: "Invalid shipping address" });
+      }
+    } else {
       return res
         .status(400)
-        .send({ status: false, message: "Invalid shipping address" });
+        .send({ status: false, message: "provide shipping address" });
     }
-    if (!validator.isValidAddress(billingAddress)) {
+    if (billingAddress) {
+      if (!validator.isValidAddress(billingAddress)) {
+        return res
+          .status(400)
+          .send({ status: false, message: "Invalid billing address" });
+      }
+    } else {
       return res
         .status(400)
-        .send({ status: false, message: "Invalid billing address" });
+        .send({ status: false, message: "provide billing address" });
     }
     let invalidEmail = await userModel.findOne({ email: email });
     if (invalidEmail) {
@@ -87,17 +106,17 @@ exports.createUser = async function (req, res) {
         message: "Phone already exists...",
       });
     }
-    // profileImage = req.files;
-    // if (profileImage && profileImage.length > 0) {
-    //   //upload to s3 and get the uploaded link
-    //   let uploadedFileURL = await uploadFile(profileImage[0]);
-    //   data.profileImage = uploadedFileURL;
-    // } else {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message: "profileImage is required.",
-    //   });
-    // }
+    profileImage = req.files;
+    if (profileImage && profileImage.length > 0) {
+      //upload to s3 and get the uploaded link
+      let uploadedFileURL = await uploadFile(profileImage[0]);
+      data.profileImage = uploadedFileURL;
+    } else {
+      return res.status(400).send({
+        status: false,
+        message: "profileImage is required.",
+      });
+    }
     data.password = await bcrypt.hash(password, 10);
     data.address = address;
     const createdUser = await userModel.create(data);
@@ -112,7 +131,7 @@ exports.createUser = async function (req, res) {
 };
 //==========================Get User Api (/login)=======================================
 
-exports.login = async function (req, res) {
+const login = async function (req, res) {
   try {
     const requestBody = req.body;
     if (!validator.isValidRequestBody(requestBody)) {
@@ -169,7 +188,7 @@ exports.login = async function (req, res) {
 
 //==========================Get User Api (user/:userId/profile)=======================================
 
-exports.getUser = async (req, res) => {
+const getUser = async (req, res) => {
   try {
     let userId = req.params.userId;
     if (!validator.isValidObjectId(userId)) {
@@ -191,7 +210,7 @@ exports.getUser = async (req, res) => {
 
 //=========================Update User Api (user/:userId/profile)===================================
 
-exports.update = async function (req, res) {
+const update = async function (req, res) {
   try {
     // Validate body
     const body = req.body;
@@ -355,4 +374,4 @@ exports.update = async function (req, res) {
   }
 };
 
-// module.exports = { createUser, getUser, update, login };
+module.exports = { createUser, getUser, update, login };

@@ -54,7 +54,7 @@ const isValidObjectId = function (objectId) {
 };
 
 const isStringsArray = function (arr) {
-  // console.log("lalan1");
+  if (!Array.isArray(arr)) return false;
   for (let i = 0; i < arr.length; i++) {
     if (!["S", "XS", "M", "X", "L", "XXL", "XL"].includes(arr[i])) return false;
   }

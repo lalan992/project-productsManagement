@@ -7,7 +7,7 @@ exports.createProduct = async function (req, res) {
     if (!validator.isValidRequestBody(req.body)) {
       return res.status(400).send({
         status: false,
-        message: "Invalid request parameters. Please provide product details",
+        message: "Please provide product details",
       });
     }
     let mandetory = [
@@ -18,7 +18,7 @@ exports.createProduct = async function (req, res) {
       "currencyFormat",
     ];
     const data = req.body;
-    console.log(data.price);
+    // console.log(data.price);
     let keys = Object.keys(req.body);
     let requireList = [];
     for (element of mandetory) {
@@ -33,7 +33,7 @@ exports.createProduct = async function (req, res) {
       });
     }
 
-    const {
+    let {
       title,
       description,
       price,
@@ -86,8 +86,8 @@ exports.createProduct = async function (req, res) {
         message: "currencyFormat must be ₹.",
       });
     }
-
-    if (Array.isArray(availableSizes)) {
+    availableSizes = availableSizes.split(",");
+    if (availableSizes) {
       if (!validator.isStringsArray(availableSizes)) {
         // console.log("1");
         return res.status(400).send({
@@ -96,16 +96,18 @@ exports.createProduct = async function (req, res) {
             "availableSizes must be among these [S, XS, M, X, L, XXL, XL] only.",
         });
       }
-    } else if (
-      availableSizes &&
-      !["S", "XS", "M", "X", "L", "XXL", "XL"].includes(availableSizes)
-    ) {
-      return res.status(400).send({
-        status: false,
-        message:
-          "availableSizes must be among these [S, XS, M, X, L, XXL, XL] only.",
-      });
+      data.availableSizes = availableSizes;
     }
+    // else if (
+    //   availableSizes &&
+    //   !["S", "XS", "M", "X", "L", "XXL", "XL"].includes(availableSizes)
+    // ) {
+    //   return res.status(400).send({
+    //     status: false,
+    //     message:
+    //       "availableSizes must be among these [S, XS, M, X, L, XXL, XL] only.",
+    //   });
+    // }
 
     if (style && !validator.isValid(style)) {
       return res.status(400).send({
@@ -123,8 +125,7 @@ exports.createProduct = async function (req, res) {
     res.status(500).send({ message: err.message });
   }
 };
-// { "$regex": name };
-// temp['price'] = { $lt: priceLessThan }
+
 exports.getByQuery = async function (req, res) {
   try {
     const { size, name, priceGreaterThan, priceLessThan, priceSort } =
@@ -240,7 +241,7 @@ exports.updateProduct = async function (req, res) {
     if (productImage && productImage.length > 0) {
       //upload to s3 and get the uploaded link
       let uploadedFileURL = await uploadFile(productImage[0]);
-      data.productImage = uploadedFileURL;
+      product.productImage = uploadedFileURL;
     }
     // console.log(req.body);
     if (title) {
@@ -335,7 +336,7 @@ exports.updateProduct = async function (req, res) {
       }
     }
     if (style) {
-      if (style && !validator.isValid(style)) {
+      if (!validator.isValid(style)) {
         return res.status(400).send({
           status: false,
           message: "Style must be string .",
