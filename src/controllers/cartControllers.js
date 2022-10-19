@@ -16,17 +16,22 @@ const createCart = async function (req, res) {
     if (!isValidRequestBody(data) || !productId)
       return res
         .status(400)
-        .send({ status: false, message: "please enter some product to Cart" });
+        .send({ status: false, message: "please enter a product to Cart" });
 
     if (!isValidObjectId(userId))
       return res
         .status(400)
         .send({ status: false, message: "please enter a valid userID" });
-
-    if (!isValidObjectId(productId))
+    if (productId) {
+      if (!isValidObjectId(productId))
+        return res
+          .status(400)
+          .send({ status: false, message: "please  enter a valid productID" });
+    } else {
       return res
         .status(400)
-        .send({ status: false, message: "please  enter a valid productID" });
+        .send({ status: false, message: "productID is required." });
+    }
 
     let validUser = await userModel.findOne({ _id: userId, isDeleted: false });
     if (!validUser)
@@ -65,7 +70,7 @@ const createCart = async function (req, res) {
         path: "items",
         populate: {
           path: "productId",
-          select: ["title", "price", "description"],
+          select: ["title", "price", "productImage"],
         },
       });
       return res
@@ -125,7 +130,7 @@ const createCart = async function (req, res) {
           path: "items",
           populate: {
             path: "productId",
-            select: ["title", "price", "description"],
+            select: ["title", "price", "productImage"],
           },
         });
         return res
@@ -245,7 +250,7 @@ const updateCart = async function (req, res) {
             path: "items",
             populate: {
               path: "productId",
-              select: ["title", "price", "description"],
+              select: ["title", "price", "productImage"],
             },
           });
           return res
@@ -332,7 +337,7 @@ const getCart = async function (req, res) {
         path: "items",
         populate: {
           path: "productId",
-          select: ["title", "price", "description"],
+          select: ["title", "price", "productImage"],
         },
       });
     if (!fetchData) {

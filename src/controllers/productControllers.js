@@ -2,7 +2,7 @@ const productModel = require("../models/productModel");
 const { uploadFile } = require("../validator/linkGenerator");
 const validator = require("../validator/validators");
 
-exports.createProduct = async function (req, res) {
+const createProduct = async function (req, res) {
   try {
     if (!validator.isValidRequestBody(req.body)) {
       return res.status(400).send({
@@ -43,11 +43,7 @@ exports.createProduct = async function (req, res) {
       style,
     } = data;
     productImage = req.files;
-    if (productImage && productImage.length > 0) {
-      //upload to s3 and get the uploaded link
-      let uploadedFileURL = await uploadFile(productImage[0]);
-      data.productImage = uploadedFileURL;
-    }
+
     if (!validator.isValid(title)) {
       return res.status(400).send({
         status: false,
@@ -86,8 +82,8 @@ exports.createProduct = async function (req, res) {
         message: "currencyFormat must be ₹.",
       });
     }
-    availableSizes = availableSizes.split(",");
     if (availableSizes) {
+      availableSizes = availableSizes.split(",");
       if (!validator.isStringsArray(availableSizes)) {
         // console.log("1");
         return res.status(400).send({
@@ -98,21 +94,21 @@ exports.createProduct = async function (req, res) {
       }
       data.availableSizes = availableSizes;
     }
-    // else if (
-    //   availableSizes &&
-    //   !["S", "XS", "M", "X", "L", "XXL", "XL"].includes(availableSizes)
-    // ) {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message:
-    //       "availableSizes must be among these [S, XS, M, X, L, XXL, XL] only.",
-    //   });
-    // }
 
     if (style && !validator.isValid(style)) {
       return res.status(400).send({
         status: false,
         message: "Style must be string .",
+      });
+    }
+    if (productImage && productImage.length > 0) {
+      //upload to s3 and get the uploaded link
+      let uploadedFileURL = await uploadFile(productImage[0]);
+      data.productImage = uploadedFileURL;
+    } else {
+      return res.status(400).send({
+        status: false,
+        message: "productImage is required.",
       });
     }
     const createdProduct = await productModel.create(data);
@@ -126,7 +122,7 @@ exports.createProduct = async function (req, res) {
   }
 };
 
-exports.getByQuery = async function (req, res) {
+const getByQuery = async function (req, res) {
   try {
     const { size, name, priceGreaterThan, priceLessThan, priceSort } =
       req.query;
@@ -180,7 +176,7 @@ exports.getByQuery = async function (req, res) {
   }
 };
 
-exports.getById = async function (req, res) {
+const getById = async function (req, res) {
   try {
     let productId = req.params.productId;
     if (!validator.isValidObjectId(productId)) {
@@ -203,9 +199,11 @@ exports.getById = async function (req, res) {
   }
 };
 
-exports.updateProduct = async function (req, res) {
+const updateProduct = async function (req, res) {
   try {
     let productId = req.params.productId;
+    productImage = req.files;
+    let isfile = productImage && productImage.length > 0;
     if (!validator.isValidObjectId(productId)) {
       return res
         .status(400)
@@ -220,13 +218,15 @@ exports.updateProduct = async function (req, res) {
         .status(404)
         .send({ status: false, message: "Product not Found" });
     }
-    if (!validator.isValidRequestBody(req.body)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please provide product updation details",
-      });
+    if (!isfile) {
+      if (!validator.isValidRequestBody(req.body)) {
+        return res.status(400).send({
+          status: false,
+          message: "Please provide product updation details",
+        });
+      }
     }
-    const {
+    let {
       title,
       description,
       price,
@@ -237,7 +237,7 @@ exports.updateProduct = async function (req, res) {
       isFreeShipping,
       installments,
     } = req.body;
-    productImage = req.files;
+
     if (productImage && productImage.length > 0) {
       //upload to s3 and get the uploaded link
       let uploadedFileURL = await uploadFile(productImage[0]);
@@ -313,27 +313,16 @@ exports.updateProduct = async function (req, res) {
       }
     }
     if (availableSizes) {
-      if (Array.isArray(availableSizes)) {
-        if (!validator.isStringsArray(availableSizes)) {
-          return res.status(400).send({
-            status: false,
-            message:
-              "availableSizes must be among these [S, XS, M, X, L, XXL, XL] only.",
-          });
-        }
-        product.availableSizes = availableSizes;
-      } else if (
-        availableSizes &&
-        !["S", "XS", "M", "X", "L", "XXL", "XL"].includes(availableSizes)
-      ) {
+      availableSizes = availableSizes.split(",");
+      if (!validator.isStringsArray(availableSizes)) {
+        // console.log("1");
         return res.status(400).send({
           status: false,
           message:
             "availableSizes must be among these [S, XS, M, X, L, XXL, XL] only.",
         });
-      } else {
-        product.availableSizes = availableSizes;
       }
+      product.availableSizes = availableSizes;
     }
     if (style) {
       if (!validator.isValid(style)) {
@@ -358,7 +347,7 @@ exports.updateProduct = async function (req, res) {
     res.status(500).send({ message: err.message });
   }
 };
-exports.deleteById = async function (req, res) {
+const deleteById = async function (req, res) {
   try {
     let productId = req.params.productId;
     if (!validator.isValidObjectId(productId)) {
@@ -385,4 +374,11 @@ exports.deleteById = async function (req, res) {
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }
+};
+module.exports = {
+  createProduct,
+  getById,
+  getByQuery,
+  updateProduct,
+  deleteById,
 };

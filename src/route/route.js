@@ -29,12 +29,44 @@ router.get("/products/:productId", productController.getById);
 router.put("/products/:productId", productController.updateProduct);
 router.delete("/products/:productId", productController.deleteById);
 //cart Apis
-router.post("/users/:userId/cart", cartController.createCart);
-router.get("/users/:userId/cart", cartController.getCart);
-router.put("/users/:userId/cart", cartController.updateCart);
-router.delete("/users/:userId/cart", cartController.deleteCart);
+router.post(
+  "/users/:userId/cart",
+  auth.Authentication,
+  auth.Authorisation,
+  cartController.createCart
+);
+router.get(
+  "/users/:userId/cart",
+  auth.Authentication,
+  auth.Authorisation,
+  cartController.getCart
+);
+router.put(
+  "/users/:userId/cart",
+  auth.Authentication,
+  auth.Authorisation,
+  cartController.updateCart
+);
+router.delete(
+  "/users/:userId/cart",
+  auth.Authentication,
+  auth.Authorisation,
+  cartController.deleteCart
+);
 
 //order Apis
+router.post(
+  "/users/:userId/orders",
+  auth.Authentication,
+  auth.Authorisation,
+  orderController.createOrder
+);
+router.put(
+  "/users/:userId/orders",
+  auth.Authentication,
+  auth.Authorisation,
+  orderController.updateOrder
+);
 
 router.all("/*", function (req, res) {
   res.status(400).send("Invalid request....!!!");

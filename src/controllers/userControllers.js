@@ -35,7 +35,7 @@ const createUser = async function (req, res) {
     } catch (err) {
       return res.status(400).send({
         status: false,
-        message: "provide address in correct object format.",
+        message: "provide address in correct JSON object format.",
       });
     }
     // console.log(address);
@@ -214,10 +214,16 @@ const update = async function (req, res) {
   try {
     // Validate body
     const body = req.body;
-    if (!validator.isValidRequestBody(body)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "please provide updation details..." });
+    let profileImage = req.files;
+    let isfile = profileImage && profileImage.length > 0;
+    console.log(!req.profileImage);
+    if (!isfile) {
+      if (!validator.isValidRequestBody(body)) {
+        return res.status(400).send({
+          status: false,
+          message: "please provide updation details...",
+        });
+      }
     }
 
     // Validate params
@@ -237,7 +243,7 @@ const update = async function (req, res) {
 
     // Destructuring
     let { fname, lname, email, phone, password, address } = body;
-    address = JSON.parse(address);
+
     if (fname) {
       if (!validator.isValidName(fname)) {
         return res
@@ -303,6 +309,14 @@ const update = async function (req, res) {
 
     // Updating address
     if (address) {
+      try {
+        address = JSON.parse(address);
+      } catch (err) {
+        return res.status(400).send({
+          status: false,
+          message: "provide address in correct JSON object format.",
+        });
+      }
       if (address["shipping"]) {
         if (address.shipping.street) {
           if (!validator.isValid(address.shipping.street)) {
@@ -360,6 +374,11 @@ const update = async function (req, res) {
           userFound.address.billing.pincode = address.billing.pincode;
         }
       }
+    }
+    if (profileImage && profileImage.length > 0) {
+      //upload to s3 and get the uploaded link
+      let uploadedFileURL = await uploadFile(profileImage[0]);
+      userFound.profileImage = uploadedFileURL;
     }
     const updated = await userModel.findOneAndUpdate(
       { _id: userId },
