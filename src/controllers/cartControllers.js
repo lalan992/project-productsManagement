@@ -306,7 +306,7 @@ const updateCart = async function (req, res) {
       }
     }
     return res
-      .status(200)
+      .status(404)
       .send({ status: false, message: "product is not available in the cart" });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });

@@ -57,12 +57,7 @@ const createOrder = async function (req, res) {
         });
       }
     }
-    if (cancellable === false && status === "canceled") {
-      return res.status(400).send({
-        status: false,
-        message: `A order can not be cancellable = false && status = canceled`,
-      });
-    }
+
     // finding cart details
     const findCart = await CartModel.findOne({ _id: cartId, userId: userId });
     if (!findCart)
@@ -145,7 +140,7 @@ const updateOrder = async function (req, res) {
     if (!isValidObjectId(orderId)) {
       return res.status(400).send({
         status: false,
-        message: `The given cartId: ${cartId} is not in proper format`,
+        message: `The given cartId: ${orderId} is invalid`,
       });
     }
     if (status) {
@@ -174,9 +169,23 @@ const updateOrder = async function (req, res) {
         message: "order details are not found with the orderId",
       });
     if (!order.cancellable && status === "canceled") {
-      return res.status(404).send({
+      return res.status(400).send({
         status: false,
         message: "your order is not cancellable.",
+      });
+    }
+    if (order.status === "completed") {
+      return res.status(400).send({
+        status: false,
+        message:
+          "your order is complete so you cannot change status to pending or canceled.",
+      });
+    }
+    if (order.status === "canceled") {
+      return res.status(400).send({
+        status: false,
+        message:
+          "your order is canceled so you cannot change status to pending or completed.",
       });
     }
 

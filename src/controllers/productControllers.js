@@ -126,6 +126,38 @@ const getByQuery = async function (req, res) {
   try {
     const { size, name, priceGreaterThan, priceLessThan, priceSort } =
       req.query;
+    if (size) {
+      if (!["S", "XS", "M", "X", "L", "XXL", "XL"].includes(size)) {
+        return res.status(400).send({
+          status: false,
+          message: "size must be among these [S, XS, M, X, L, XXL, XL] only.",
+        });
+      }
+    }
+    if (priceSort) {
+      if (!["1", "-1"].includes(priceSort)) {
+        return res.status(400).send({
+          status: false,
+          message: "priceSort must be 1 or -1.",
+        });
+      }
+    }
+    if (priceGreaterThan) {
+      if (!/^[\d]+[.]*[\d]*$/.test(priceGreaterThan)) {
+        return res.status(400).send({
+          status: false,
+          message: "priceGreaterThan must be valid.",
+        });
+      }
+    }
+    if (priceLessThan) {
+      if (!/^[\d]+[.]*[\d]*$/.test(priceLessThan)) {
+        return res.status(400).send({
+          status: false,
+          message: "priceLessThan must be valid.",
+        });
+      }
+    }
     let totalProducts = await productModel
       .find({ isDeleted: false })
       .sort({ price: priceSort || 1 });
@@ -184,7 +216,10 @@ const getById = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Please Provide valid productId" });
     }
-    let checkData = await productModel.findById(productId);
+    let checkData = await productModel.findOne({
+      _id: productId,
+      isDeleted: false,
+    });
     if (!checkData) {
       return res
         .status(404)

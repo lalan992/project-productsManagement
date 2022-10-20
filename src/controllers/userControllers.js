@@ -216,7 +216,6 @@ const update = async function (req, res) {
     const body = req.body;
     let profileImage = req.files;
     let isfile = profileImage && profileImage.length > 0;
-    console.log(!req.profileImage);
     if (!isfile) {
       if (!validator.isValidRequestBody(body)) {
         return res.status(400).send({
@@ -234,7 +233,9 @@ const update = async function (req, res) {
         .send({ status: false, message: `${userId} is invalid` });
     }
 
-    const userFound = await userModel.findOne({ _id: userId });
+    const userFound = await userModel.findOne({
+      _id: userId,
+    });
     if (!userFound) {
       return res
         .status(404)

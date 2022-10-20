@@ -43,6 +43,7 @@ const Authorisation = async function (req, res, next) {
         .status(403)
         .send({ status: false, message: " Not authorised .." });
     } else {
+      console.log("authorized");
       next();
     }
   } catch (err) {
