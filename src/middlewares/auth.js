@@ -4,10 +4,11 @@ const validator = require("../validator/validators");
 
 const Authentication = async function (req, res, next) {
   try {
-    let token = req.headers["authorization"].split(" ")[1];
-    if (!token) {
-      return res.send({ status: false, message: "Enter token in the headers" });
+    const bearer = req.headers["authorization"];
+    if (!bearer) {
+      return res.status(400).send({ status: false, message: "Enter token in the headers" });
     }
+    let token = req.headers["authorization"].split(" ")[1];
     jwt.verify(token, "secretkey", function (err, decodedToken) {
       if (err) {
         return res.status(401).send({ status: false, message: err.message });
